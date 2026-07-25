@@ -1,2 +1,2 @@
-# RAG-
-my journey of learning RAG from scratch 
+# RAG
+My journey of learning RAG from scratch 
