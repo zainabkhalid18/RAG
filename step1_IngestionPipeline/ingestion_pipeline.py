@@ -4,7 +4,7 @@ import os
 from langchain_community.document_loaders import TextLoader, DirectoryLoader
 # to chunk the loaded source files use charactertextsplitter class
 from langchain_text_splitters import CharacterTextSplitter
-# now to convert the chunks to embeddings using OpenAIEmbeddings model
+# now to convert the chunks to embeddings using Hugging face embedding model
 from langchain_huggingface import HuggingFaceEmbeddings
 # After embeddings process store in vector database which is chroma db here
 from langchain_chroma import Chroma
