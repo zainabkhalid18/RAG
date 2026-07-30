@@ -1,0 +1,64 @@
+# import the chroma database
+from langchain_chroma import Chroma
+#import hugging face embedding model
+from langchain_huggingface import HuggingFaceEmbeddings
+#model which is going to generate answer
+from langchain_groq import ChatGroq
+from langchain_core.messages import HumanMessage, SystemMessage
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
+#load the vector database
+persistant_directory = "E:/RAG/step1_IngestionPipeline/db/chroma_db"
+
+#load the embedding model . Use the same model
+embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+
+db = Chroma( 
+    persist_directory= persistant_directory,
+    embedding_function= embedding_model,
+    collection_metadata= {"hnsw:space": "cosine"}
+)
+
+query = "What was Microsoft's first hardware product release?"
+
+#now use this db as a retriever and retrieve top 5 chunks with the highest similarity scores to the user query embedding
+retriever = db.as_retriever(search_kwargs = {"k":5})
+
+#invoke the retriever and pass the query to get top 5 chunks
+relevant_documents = retriever.invoke(query)
+
+print(f"User Query: {query}")
+
+print("Context") 
+
+#print results
+for i, docs in enumerate(relevant_documents,1):
+    print(f"Document {i}:\n{docs.page_content}\n")
+
+
+combined_input = f"""Based on the following documents, please answer this question: {query}
+
+Documents:
+{chr(10).join([f"-{doc.page_content}" for doc in relevant_documents])} 
+
+Please provide a clear, helpful answer using only the information from these documents. If you can't find the answer in the documents say i dont have enough information to answer
+"""
+
+#initialize the model
+model = ChatGroq(model="llama-3.1-8b-instant")
+
+messages = [
+    SystemMessage(content="You are a helpful assistant"),
+    HumanMessage(content=combined_input)
+]
+
+result = model.invoke(messages)
+
+print(result.content)
+
+
+
+
