@@ -27,15 +27,18 @@ def ask_question(user_question):
         messages = [
             SystemMessage(content="Given the Chat history. rewrite the new asked question to be standalone and searchable.Just return the rewritten question")
         ] + chat_history + [
-            HumanMessage(content=f"New Question: {search_question}")
+            HumanMessage(content=f"New Question: {user_question}")
         ]
+
+        result = model.invoke(messages)
+        search_question = result.content
 
     else:
         search_question = user_question
 
     #step 2 Find the relevant documents/chunks
 
-    retriever = db.as_retriever(search_kwargs={"k":3})
+    retriever = db.as_retriever(search_kwargs={"k":5})
     docs = retriever.invoke(search_question)
 
     print(f"Found {len(docs)} relevant documents")
@@ -63,7 +66,7 @@ def ask_question(user_question):
     ]
 
     result= model.invoke(messages)
-    answer = result.content
+    answer = result.content 
 
     #step 5: Remember the conversation
     chat_history.append(HumanMessage(content=user_question))
